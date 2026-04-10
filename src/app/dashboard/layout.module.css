@@ -1,0 +1,192 @@
+.layout {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  background:
+    radial-gradient(860px 520px at 88% -8%, rgba(70, 101, 80, 0.12), transparent 66%),
+    radial-gradient(760px 420px at 4% 92%, rgba(236, 233, 213, 0.62), transparent 70%),
+    #fdf9f0;
+  overflow-x: clip;
+}
+
+.ambientLayer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orbA,
+.orbB,
+.orbC {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(54px);
+  opacity: 0.45;
+  animation: orbFloat 18s ease-in-out infinite;
+}
+
+.orbA {
+  width: 440px;
+  height: 440px;
+  left: -140px;
+  top: -110px;
+  background: rgba(70, 101, 80, 0.36);
+}
+
+.orbB {
+  width: 420px;
+  height: 420px;
+  right: -120px;
+  top: 12%;
+  background: rgba(223, 219, 196, 0.9);
+  animation-delay: -6s;
+}
+
+.orbC {
+  width: 520px;
+  height: 520px;
+  right: 24%;
+  bottom: -240px;
+  background: rgba(197, 217, 202, 0.55);
+  animation-delay: -10s;
+}
+
+.gridGlow {
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+  background:
+    linear-gradient(rgba(70, 101, 80, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(70, 101, 80, 0.14) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(circle at 50% 40%, rgba(0, 0, 0, 0.7), transparent 76%);
+  -webkit-mask-image: radial-gradient(circle at 50% 40%, rgba(0, 0, 0, 0.7), transparent 76%);
+}
+
+.noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+}
+
+.main {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  margin-left: 260px;
+  padding: 18px;
+  transition: margin-left var(--transition-base), padding var(--transition-base);
+}
+
+body[data-sidebar-collapsed="true"] .main {
+  margin-left: 72px;
+}
+
+.shell {
+  position: relative;
+  min-height: calc(100vh - 36px);
+  border-radius: 30px;
+  background: linear-gradient(160deg, rgba(253, 249, 237, 0.86), rgba(247, 244, 229, 0.96));
+  border: 1px solid rgba(188, 186, 167, 0.36);
+  box-shadow:
+    0 38px 60px -48px rgba(57, 56, 43, 0.58),
+    0 12px 28px -22px rgba(57, 56, 43, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(128deg, rgba(255, 255, 255, 0.42), transparent 44%),
+    radial-gradient(420px 220px at 12% 8%, rgba(70, 101, 80, 0.08), transparent 70%);
+  pointer-events: none;
+}
+
+.shellGlow {
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 120px;
+  background: radial-gradient(ellipse at top, rgba(70, 101, 80, 0.18), transparent 72%);
+  filter: blur(22px);
+  pointer-events: none;
+}
+
+.shellInner {
+  position: relative;
+  z-index: 2;
+  min-height: inherit;
+  padding: 24px;
+}
+
+[data-theme="dark"] .layout {
+  background:
+    radial-gradient(860px 520px at 88% -8%, rgba(95, 125, 108, 0.28), transparent 66%),
+    radial-gradient(760px 420px at 4% 92%, rgba(55, 58, 52, 0.5), transparent 70%),
+    #11140f;
+}
+
+[data-theme="dark"] .shell {
+  background: linear-gradient(160deg, rgba(32, 38, 31, 0.82), rgba(22, 26, 22, 0.9));
+  border-color: rgba(156, 166, 152, 0.28);
+  box-shadow:
+    0 44px 72px -48px rgba(0, 0, 0, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .shell::before {
+  background:
+    linear-gradient(128deg, rgba(255, 255, 255, 0.05), transparent 44%),
+    radial-gradient(420px 220px at 12% 8%, rgba(120, 162, 140, 0.18), transparent 70%);
+}
+
+[data-theme="dark"] .shellGlow {
+  background: radial-gradient(ellipse at top, rgba(112, 150, 129, 0.26), transparent 72%);
+}
+
+@media (max-width: 1024px) {
+  .main {
+    padding: 14px;
+  }
+
+  .shell {
+    border-radius: 22px;
+    min-height: calc(100vh - 28px);
+  }
+
+  .shellInner {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    margin-left: 72px;
+    padding: 12px;
+  }
+
+  .shell {
+    border-radius: 16px;
+  }
+
+  .shellInner {
+    padding: 14px;
+  }
+}
+
+@keyframes orbFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(14px, -18px, 0) scale(1.04);
+  }
+}
