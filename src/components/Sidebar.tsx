@@ -10,6 +10,7 @@ import {
   FileDown,
   Scale,
   MessageSquare,
+  HeartHandshake,
   Settings,
   Moon,
   Sun,
@@ -98,6 +99,7 @@ export default function Sidebar() {
         label: "Communication",
         badge: unreadCount > 0 ? unreadCount : undefined,
       },
+      { href: "/dashboard/support", icon: HeartHandshake, label: "Support" },
       { href: "/dashboard/settings", icon: Settings, label: "Settings" },
     ],
     [unreadCount]
