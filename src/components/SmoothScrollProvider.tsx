@@ -18,7 +18,6 @@ export default function SmoothScrollProvider({ children }: SmoothScrollProviderP
       easing: (t: number) => 1 - Math.pow(1 - t, 3),
       smoothWheel: true,
       syncTouch: false,
-      touchInertiaMultiplier: 35,
       wheelMultiplier: 0.9,
     });
 

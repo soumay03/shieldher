@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CommunicationHub from '@/components/communication/CommunicationHub';
 import { createClient } from '@/lib/supabase/client';
@@ -39,7 +39,9 @@ export default function DashboardCommunicationPage() {
 
   return (
     <div className={styles.page}>
-      <CommunicationHub />
+      <Suspense fallback={<div>Loading communication hub...</div>}>
+        <CommunicationHub />
+      </Suspense>
     </div>
   );
 }

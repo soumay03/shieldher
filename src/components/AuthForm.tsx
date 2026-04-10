@@ -107,6 +107,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
         if (!res.ok) throw new Error(data.error || 'Failed to sign up');
       }
 
+
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: emailForAuth,
         password,
@@ -135,6 +136,7 @@ export default function AuthForm({ initialMode = 'login' }: AuthFormProps) {
       setLoading(false);
     }
   };
+
 
   return (
     <div className={styles.wrapper}>
