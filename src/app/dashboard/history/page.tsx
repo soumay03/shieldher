@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { type Upload, type AnalysisResult } from "@/lib/types";
-import { deriveKey, storeKey, retrieveKey, uint8ArrayToBase64 } from "@/lib/crypto";
+import { deriveKey, storeKey, retrieveKey, uint8ArrayToBase64, generateSalt } from "@/lib/crypto";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import {
   FileSearch,
@@ -58,11 +58,11 @@ export default function HistoryPage() {
   const [uploads, setUploads] = useState<UploadWithAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "flagged" | "safe">("all");
-  
+
   // Deletion state
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // Lock screen state
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [passwordPrompt, setPasswordPrompt] = useState("");
@@ -85,7 +85,7 @@ export default function HistoryPage() {
 
       if (data) {
         setUploads(data as UploadWithAnalysis[]);
-        
+
         // Automatic unlock if the key is already in memory
         const key = await retrieveKey();
         if (key) {
@@ -99,44 +99,44 @@ export default function HistoryPage() {
   }, []);
 
   const performProxyDecryption = async (key: CryptoKey, items: UploadWithAnalysis[]) => {
-      try {
-        const rawKeyBuffer = await window.crypto.subtle.exportKey('raw', key);
-        const masterKeyBase64 = uint8ArrayToBase64(new Uint8Array(rawKeyBuffer));
+    try {
+      const rawKeyBuffer = await window.crypto.subtle.exportKey('raw', key);
+      const masterKeyBase64 = uint8ArrayToBase64(new Uint8Array(rawKeyBuffer));
 
-        const decryptedUploads: UploadWithAnalysis[] = [];
-        for (const upload of items) {
-          // Only proxy decrypt items that have encrypted fields or IVs
-          if (!upload.file_iv && !upload.analysis_results?.some(a => a.encrypted_summary)) {
-            decryptedUploads.push(upload); 
-            continue;
-          }
+      const decryptedUploads: UploadWithAnalysis[] = [];
+      for (const upload of items) {
+        // Only proxy decrypt items that have encrypted fields or IVs
+        if (!upload.file_iv && !upload.analysis_results?.some(a => a.encrypted_summary)) {
+          decryptedUploads.push(upload);
+          continue;
+        }
 
-          try {
-            const res = await fetch('/api/decrypt', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ uploadId: upload.id, masterKey: masterKeyBase64 })
+        try {
+          const res = await fetch('/api/decrypt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uploadId: upload.id, masterKey: masterKeyBase64 })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            decryptedUploads.push({
+              ...upload,
+              analysis_results: data.analysis ? [data.analysis] : (upload.analysis_results || []),
+              decrypted_url: data.decryptedMedia
             });
-            
-            if (res.ok) {
-              const data = await res.json();
-              decryptedUploads.push({ 
-                ...upload, 
-                analysis_results: data.analysis ? [data.analysis] : (upload.analysis_results || []), 
-                decrypted_url: data.decryptedMedia 
-              });
-            } else {
-              decryptedUploads.push(upload);
-            }
-          } catch (e) {
-            console.error(`Proxy decryption failed for ${upload.id}:`, e);
+          } else {
             decryptedUploads.push(upload);
           }
+        } catch (e) {
+          console.error(`Proxy decryption failed for ${upload.id}:`, e);
+          decryptedUploads.push(upload);
         }
-        setUploads(decryptedUploads);
-      } catch (err) {
-        console.error("Proxy decryption master loop failed", err);
       }
+      setUploads(decryptedUploads);
+    } catch (err) {
+      console.error("Proxy decryption master loop failed", err);
+    }
   };
 
   const handleUnlock = async (e: React.FormEvent) => {
@@ -164,11 +164,21 @@ export default function HistoryPage() {
         .eq("id", user.id)
         .single();
 
-      if (!profile?.encryption_salt) throw new Error("Encryption profile not found");
+      let salt = profile?.encryption_salt;
 
-      const key = await deriveKey(passwordPrompt, profile.encryption_salt);
-      await storeKey(key, profile.encryption_salt); // Cache in memory
-      
+      if (!salt) {
+        salt = generateSalt();
+        const { error: updateErr } = await supabase
+          .from("profiles")
+          .update({ encryption_salt: salt })
+          .eq("id", user.id);
+
+        if (updateErr) throw new Error("Failed to initialize encryption profile");
+      }
+
+      const key = await deriveKey(passwordPrompt, salt);
+      await storeKey(key, salt); // Cache in memory
+
       // 3. Trigger proxy decryption
       setIsUnlocked(true);
       performProxyDecryption(key, uploads);
@@ -324,8 +334,8 @@ export default function HistoryPage() {
                       />
                     ) : (
                       <div className={styles.audioItemPreview}>
-                         <FileAudio size={40} className={styles.audioIcon} />
-                         <audio src={upload.decrypted_url || primaryAsset} controls className={styles.cardAudio} />
+                        <FileAudio size={40} className={styles.audioIcon} />
+                        <audio src={upload.decrypted_url || primaryAsset} controls className={styles.cardAudio} />
                       </div>
                     )
                   ) : (
@@ -347,7 +357,7 @@ export default function HistoryPage() {
                           year: "numeric",
                         })}
                       </span>
-                      <button 
+                      <button
                         className={styles.deleteBtn}
                         onClick={() => setDeleteId(upload.id)}
                         disabled={isDeleting}

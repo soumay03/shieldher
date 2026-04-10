@@ -28,9 +28,9 @@ const PLATFORM_TO_INFO_SOURCE: Record<string, number> = {
 
 // ─── Explicit textual label mapping to defeat index shifts ───
 const FORCED_CATEGORY_LABEL = "Women/Children Related Crime";
-const FORCED_CATEGORY_VALUE = "14"; 
+const FORCED_CATEGORY_VALUE = "14";
 const FORCED_SUBCATEGORY_LABEL = "Sexually Explicit Act";
-const FORCED_SUBCATEGORY_VALUE = ""; 
+const FORCED_SUBCATEGORY_VALUE = "";
 
 // ─── Suspect ID type → dropdown index mapping ───
 const SUSPECT_ID_TYPE_MAP: Record<string, number> = {
@@ -243,11 +243,11 @@ export async function POST(request: NextRequest) {
 
     // ─── Spawn the Python bot ───
     const scriptPath = path.resolve(process.cwd(), 'bot/rpa_complaint_bot.py');
-    const venvPythonPath = path.resolve(process.cwd(), 'bot/.venv/Scripts/python.exe');
+    const venvPythonPath = 'C:\\Users\\souma\\AppData\\Local\\Programs\\Python\\Python314\\python.exe';
 
     const botDir = path.resolve(process.cwd(), 'bot');
     const logPath = path.join(botDir, 'rpa_tmp', 'bot_output.log');
-    
+
     // Ensure the log file's directory exists
     if (!fs.existsSync(path.dirname(logPath))) {
       fs.mkdirSync(path.dirname(logPath), { recursive: true });
